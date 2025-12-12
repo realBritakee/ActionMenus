@@ -1,0 +1,10 @@
+{
+  "debug": false,
+  "check_updates": false,
+  
+  "gui_menus": {
+    "warps": {
+      "file": "warps.json"
+    }
+  }
+}

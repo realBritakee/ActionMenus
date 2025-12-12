@@ -1,117 +1,175 @@
 package com.britakee.actionmenus;
 
-import org.slf4j.Logger;
-
+import com.britakee.actionmenus.action.ActionExecutor;
+import com.britakee.actionmenus.action.ActionRegistry;
+import com.britakee.actionmenus.command.ActionMenusCommand;
+import com.britakee.actionmenus.condition.ConditionEvaluator;
+import com.britakee.actionmenus.config.ConfigManager;
+import com.britakee.actionmenus.menu.MenuManager;
+import com.britakee.actionmenus.menu.MenuRegistry;
+import com.britakee.actionmenus.menu.MenuUpdateScheduler;
+import com.britakee.actionmenus.permission.PermissionManager;
+import com.britakee.actionmenus.placeholder.PlaceholderManager;
 import com.mojang.logging.LogUtils;
-
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/neoforge.mods.toml file
-@Mod(ActionMenus.MODID)
+import java.nio.file.Path;
+
+/**
+ * ActionMenus - A server-side inventory GUI menu system for NeoForge 1.21.1
+ * 
+ * This mod provides functionality similar to DeluxeMenus for Bukkit/Spigot,
+ * allowing server administrators to create custom inventory-based menus
+ * through JSON configuration files.
+ * 
+ * Features:
+ * - Config-driven menu definitions
+ * - Dynamic placeholders with auto-refresh
+ * - Conditional item display
+ * - Extensible action system
+ * - Custom command aliases per menu
+ * - No client-side mod required
+ */
+@Mod(ActionMenus.MOD_ID)
 public class ActionMenus {
-    // Define mod id in a common place for everything to reference
-    public static final String MODID = "actionmenus";
-    // Directly reference a slf4j logger
+    
+    public static final String MOD_ID = "actionmenus";
     public static final Logger LOGGER = LogUtils.getLogger();
-    // Create a Deferred Register to hold Blocks which will all be registered under the "actionmenus" namespace
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
-    // Create a Deferred Register to hold Items which will all be registered under the "actionmenus" namespace
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
-    // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "actionmenus" namespace
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-
-    // Creates a new Block with the id "actionmenus:example_block", combining the namespace and path
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
-    // Creates a new BlockItem with the id "actionmenus:example_block", combining the namespace and path
-    public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
-
-    // Creates a new food item with the id "actionmenus:example_id", nutrition 1 and saturation 2
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
-            .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
-
-    // Creates a creative tab with the id "actionmenus:example_tab" for the example item, that is placed after the combat tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.actionmenus")) //The language key for the title of your CreativeModeTab
-            .withTabsBefore(CreativeModeTabs.COMBAT)
-            .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
-            .displayItems((parameters, output) -> {
-                output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
-            }).build());
-
-    // The constructor for the mod class is the first code that is run when your mod is loaded.
-    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
+    
+    // Singleton instance
+    private static ActionMenus instance;
+    
+    // Core managers
+    private final ConfigManager configManager;
+    private final PlaceholderManager placeholderManager;
+    private final ConditionEvaluator conditionEvaluator;
+    private final ActionRegistry actionRegistry;
+    private final ActionExecutor actionExecutor;
+    private final MenuRegistry menuRegistry;
+    private final MenuManager menuManager;
+    private final PermissionManager permissionManager;
+    private final MenuUpdateScheduler menuUpdateScheduler;
+    
+    // Config directory
+    private final Path configDir;
+    
     public ActionMenus(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-        // Register the Deferred Register to the mod event bus so blocks get registered
-        BLOCKS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so items get registered
-        ITEMS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so tabs get registered
-        CREATIVE_MODE_TABS.register(modEventBus);
-
-        // Register ourselves for server and other game events we are interested in.
-        // Note that this is necessary if and only if we want *this* class (ActionMenus) to respond directly to events.
-        // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
+        instance = this;
+        
+        // Setup config directory
+        this.configDir = FMLPaths.CONFIGDIR.get().resolve(MOD_ID);
+        
+        // Initialize core managers
+        this.permissionManager = new PermissionManager();
+        this.placeholderManager = new PlaceholderManager();
+        this.conditionEvaluator = new ConditionEvaluator(placeholderManager);
+        this.actionRegistry = new ActionRegistry();
+        this.actionExecutor = new ActionExecutor(actionRegistry, placeholderManager);
+        this.menuRegistry = new MenuRegistry();
+        this.menuManager = new MenuManager(menuRegistry, placeholderManager, conditionEvaluator, actionExecutor);
+        this.configManager = new ConfigManager(configDir, menuRegistry, actionRegistry, placeholderManager);
+        this.menuUpdateScheduler = new MenuUpdateScheduler(menuManager);
+        
+        // Register mod event listeners
+        modEventBus.addListener(this::onCommonSetup);
+        
+        // Register game event listeners
         NeoForge.EVENT_BUS.register(this);
-
-        // Register the item to a creative tab
-        modEventBus.addListener(this::addCreative);
-
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        NeoForge.EVENT_BUS.register(menuManager);
+        NeoForge.EVENT_BUS.register(menuUpdateScheduler);
+        
+        LOGGER.info("ActionMenus initialized!");
     }
-
-    private void commonSetup(FMLCommonSetupEvent event) {
-        // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
-
-        if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
-            LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
-        }
-
-        LOGGER.info("{}{}", Config.MAGIC_NUMBER_INTRODUCTION.get(), Config.MAGIC_NUMBER.getAsInt());
-
-        Config.ITEM_STRINGS.get().forEach((item) -> LOGGER.info("ITEM >> {}", item));
+    
+    private void onCommonSetup(final FMLCommonSetupEvent event) {
+        LOGGER.info("ActionMenus common setup...");
+        
+        // Register built-in placeholders
+        placeholderManager.registerBuiltInProviders();
+        
+        // Register built-in actions
+        actionRegistry.registerBuiltInActions();
+        
+        LOGGER.info("ActionMenus setup complete!");
     }
-
-    // Add the example block item to the building blocks tab
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(EXAMPLE_BLOCK_ITEM);
-        }
-    }
-
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
+        LOGGER.info("ActionMenus loading configuration...");
+        
+        // Set server reference for placeholders
+        placeholderManager.setServer(event.getServer());
+        
+        // Load all configurations
+        configManager.loadAll();
+        
+        LOGGER.info("ActionMenus loaded {} menus", menuRegistry.getMenuCount());
+    }
+    
+    @SubscribeEvent
+    public void onServerStopping(ServerStoppingEvent event) {
+        LOGGER.info("ActionMenus shutting down...");
+        
+        // Close all open menus
+        menuManager.closeAllMenus();
+        
+        // Clear server reference
+        placeholderManager.setServer(null);
+    }
+    
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        ActionMenusCommand.register(event.getDispatcher(), this);
+    }
+    
+    // Getters for managers
+    public static ActionMenus getInstance() {
+        return instance;
+    }
+    
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+    
+    public PlaceholderManager getPlaceholderManager() {
+        return placeholderManager;
+    }
+    
+    public ConditionEvaluator getConditionEvaluator() {
+        return conditionEvaluator;
+    }
+    
+    public ActionRegistry getActionRegistry() {
+        return actionRegistry;
+    }
+    
+    public ActionExecutor getActionExecutor() {
+        return actionExecutor;
+    }
+    
+    public MenuRegistry getMenuRegistry() {
+        return menuRegistry;
+    }
+    
+    public MenuManager getMenuManager() {
+        return menuManager;
+    }
+    
+    public PermissionManager getPermissionManager() {
+        return permissionManager;
+    }
+    
+    public Path getConfigDir() {
+        return configDir;
     }
 }

@@ -1,0 +1,306 @@
+{
+  "menu_title": "&8Warps",
+  "open_command": ["warps", "warp"],
+  "size": 36,
+  "update_interval": 1,
+  
+  "items": {
+    "glass1": {
+      "material": "gray_stained_glass_pane",
+      "slot": 0,
+      "display_name": " "
+    },
+    "glass2": {
+      "material": "gray_stained_glass_pane",
+      "slot": 1,
+      "display_name": " "
+    },
+    "glass3": {
+      "material": "gray_stained_glass_pane",
+      "slot": 2,
+      "display_name": " "
+    },
+    "glass4": {
+      "material": "gray_stained_glass_pane",
+      "slot": 3,
+      "display_name": " "
+    },
+    "glass5": {
+      "material": "gray_stained_glass_pane",
+      "slot": 4,
+      "display_name": " "
+    },
+    "glass6": {
+      "material": "gray_stained_glass_pane",
+      "slot": 5,
+      "display_name": " "
+    },
+    "glass7": {
+      "material": "gray_stained_glass_pane",
+      "slot": 6,
+      "display_name": " "
+    },
+    "glass8": {
+      "material": "gray_stained_glass_pane",
+      "slot": 7,
+      "display_name": " "
+    },
+    "glass9": {
+      "material": "gray_stained_glass_pane",
+      "slot": 8,
+      "display_name": " "
+    },
+    "glass10": {
+      "material": "gray_stained_glass_pane",
+      "slot": 9,
+      "display_name": " "
+    },
+    
+    "wirtschaftshaus": {
+      "material": "jukebox",
+      "slot": 10,
+      "display_name": "&8• &a&lWirtschaftshaus",
+      "lore": [
+        " &7Hier findest du Jobs, Quests und Features.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Wirtschaftshaus",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Wirtschaftshaus",
+        "[close]"
+      ]
+    },
+    
+    "glass11": {
+      "material": "gray_stained_glass_pane",
+      "slot": 11,
+      "display_name": " "
+    },
+    
+    "bank": {
+      "material": "gold_block",
+      "slot": 12,
+      "display_name": "&8• &a&lBank",
+      "lore": [
+        " &7Hier findest den Bank",
+        " &7Bereich sowie die Belohnungen.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Bank",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Bank",
+        "[close]"
+      ]
+    },
+    
+    "glass12": {
+      "material": "gray_stained_glass_pane",
+      "slot": 13,
+      "display_name": " "
+    },
+    
+    "casino": {
+      "material": "red_terracotta",
+      "slot": 14,
+      "display_name": "&8• &a&lCasino",
+      "lore": [
+        " &7Hier findest du CoinFlip,",
+        " &7Jackpot, Crash und Roulette.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Casino",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Casino",
+        "[close]"
+      ]
+    },
+    
+    "glass13": {
+      "material": "gray_stained_glass_pane",
+      "slot": 15,
+      "display_name": " "
+    },
+    
+    "crates": {
+      "material": "ender_chest",
+      "slot": 16,
+      "display_name": "&8• &a&lCrates",
+      "lore": [
+        " &7Hier findest du die",
+        " &7Vote-, Episch-, sowie Legendär Crate.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Crates",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Crates",
+        "[close]"
+      ]
+    },
+    
+    "glass14": {
+      "material": "gray_stained_glass_pane",
+      "slot": 17,
+      "display_name": " "
+    },
+    "glass15": {
+      "material": "gray_stained_glass_pane",
+      "slot": 18,
+      "display_name": " "
+    },
+    
+    "einkaufshalle": {
+      "material": "melon",
+      "slot": 19,
+      "display_name": "&8• &a&lEinkaufshalle",
+      "lore": [
+        " &7Hier findest du verschiedene Spielershops.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Einkaufshalle",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Einkaufshalle",
+        "[close]"
+      ]
+    },
+    
+    "glass16": {
+      "material": "gray_stained_glass_pane",
+      "slot": 20,
+      "display_name": " "
+    },
+    
+    "farming": {
+      "material": "gravel",
+      "slot": 21,
+      "display_name": "&8• &a&lFarming",
+      "lore": [
+        " &7Hier findest du die Farmwelt,",
+        " &7Das Nether sowie das End.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Farming",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Farming",
+        "[close]"
+      ]
+    },
+    
+    "glass17": {
+      "material": "gray_stained_glass_pane",
+      "slot": 22,
+      "display_name": " "
+    },
+    
+    "erfahrung": {
+      "material": "glass",
+      "slot": 23,
+      "display_name": "&8• &a&lErfahrung",
+      "lore": [
+        " &7Hier findest du ein Umtausch,",
+        " &7von Level in Erfahrungsflaschen.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Erfahrung",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Erfahrung",
+        "[close]"
+      ]
+    },
+    
+    "glass18": {
+      "material": "gray_stained_glass_pane",
+      "slot": 24,
+      "display_name": " "
+    },
+    
+    "shop": {
+      "material": "end_portal_frame",
+      "slot": 25,
+      "display_name": "&8• &a&lShop",
+      "lore": [
+        " &7Hier findest du den Shop sowie die Kosmetik.",
+        " &8(&7&oKlicke um dich zu teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[player] ewarp Shop",
+        "[close]"
+      ],
+      "right_click_commands": [
+        "[player] ewarp Shop",
+        "[close]"
+      ]
+    },
+    
+    "glass19": {
+      "material": "gray_stained_glass_pane",
+      "slot": 26,
+      "display_name": " "
+    },
+    "glass20": {
+      "material": "gray_stained_glass_pane",
+      "slot": 27,
+      "display_name": " "
+    },
+    "glass21": {
+      "material": "gray_stained_glass_pane",
+      "slot": 28,
+      "display_name": " "
+    },
+    "glass22": {
+      "material": "gray_stained_glass_pane",
+      "slot": 29,
+      "display_name": " "
+    },
+    "glass23": {
+      "material": "gray_stained_glass_pane",
+      "slot": 30,
+      "display_name": " "
+    },
+    "glass24": {
+      "material": "gray_stained_glass_pane",
+      "slot": 31,
+      "display_name": " "
+    },
+    "glass25": {
+      "material": "gray_stained_glass_pane",
+      "slot": 32,
+      "display_name": " "
+    },
+    "glass26": {
+      "material": "gray_stained_glass_pane",
+      "slot": 33,
+      "display_name": " "
+    },
+    "glass27": {
+      "material": "gray_stained_glass_pane",
+      "slot": 34,
+      "display_name": " "
+    },
+    "glass28": {
+      "material": "gray_stained_glass_pane",
+      "slot": 35,
+      "display_name": " "
+    }
+  }
+}
