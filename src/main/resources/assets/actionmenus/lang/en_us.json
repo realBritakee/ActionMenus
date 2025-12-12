@@ -1,0 +1,13 @@
+{
+  "itemGroup.actionmenus": "Example Mod Tab",
+  "block.actionmenus.example_block": "Example Block",
+  "item.actionmenus.example_item": "Example Item",
+
+  "actionmenus.configuration.title": "ActionMenus Configs",
+  "actionmenus.configuration.section.actionmenus.common.toml": "ActionMenus Configs",
+  "actionmenus.configuration.section.actionmenus.common.toml.title": "ActionMenus Configs",
+  "actionmenus.configuration.items": "Item List",
+  "actionmenus.configuration.logDirtBlock": "Log Dirt Block",
+  "actionmenus.configuration.magicNumberIntroduction": "Magic Number Text",
+  "actionmenus.configuration.magicNumber": "Magic Number"
+}
