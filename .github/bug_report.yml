@@ -1,0 +1,115 @@
+name: "🐞 Bug report"
+description: "Report a problem with ActionMenus"
+title: "[Bug] <short summary>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug with **ActionMenus**.
+        Please fill in the details below so the issue can be reproduced and fixed.
+
+  - type: input
+    id: am_version
+    attributes:
+      label: ActionMenus version
+      description: Exact plugin/mod version.
+      placeholder: "v1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: mc_version
+    attributes:
+      label: Minecraft version
+      placeholder: "1.21.1"
+    validations:
+      required: true
+
+  - type: input
+    id: neoforge_version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.x.x"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Dedicated server
+        - LAN / local server
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: What happened, and what did you expect to happen?
+      placeholder: "When I open <menu>, it ..., but I expected ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Step-by-step instructions so the issue can be reproduced.
+      placeholder: |
+        1. Start server with ...
+        2. Run command /menu ...
+        3. Click on ...
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: menu_config
+    attributes:
+      label: Relevant menu JSON
+      description: Paste only the smallest JSON snippet that still causes the issue.
+      render: json
+      placeholder: |
+        {
+          "menus": {
+            "example": {
+              ...
+            }
+          }
+        }
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / crash report
+      description: Paste a link to your server log / crash report (for example from a paste site).
+      placeholder: "https://paste.example.com/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: other_mods
+    attributes:
+      label: Other important mods / plugins
+      description: List anything that might interact with commands, permissions, or GUIs.
+      placeholder: "LuckPerms, FTB Ranks, ... "
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-checks
+      options:
+        - label: I am using the latest version of ActionMenus.
+          required: true
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I tested with only ActionMenus and the minimal required dependencies if possible.
+          required: false

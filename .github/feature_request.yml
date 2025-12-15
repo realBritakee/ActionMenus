@@ -1,0 +1,57 @@
+name: "✨ Feature request"
+description: "Suggest a new feature or improvement for ActionMenus"
+title: "[Feature] <short summary>"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea to make **ActionMenus** better?
+        Focus on what you want to achieve, not just how to implement it.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Feature description
+      description: What should ActionMenus do that it cannot do right now?
+      placeholder: "Allow menus to ... / Add a new action type that ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case / motivation
+      description: How does this help server admins or players on your server?
+      placeholder: "On my server, players need to ..., this feature would ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: config_example
+    attributes:
+      label: Example JSON idea (optional)
+      description: Optionally sketch how this could look in a menu JSON.
+      render: json
+      placeholder: |
+        {
+          "actions": [
+            {
+              "type": "example",
+              "..."
+            }
+          ]
+        }
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Small tweak
+        - New option in existing feature
+        - New major feature
+    validations:
+      required: false
