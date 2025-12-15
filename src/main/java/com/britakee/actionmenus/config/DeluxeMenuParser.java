@@ -78,6 +78,31 @@ public class DeluxeMenuParser {
                 }
             }
             
+            // Parse open_sound - can be string or object with volume/pitch
+            if (json.has("open_sound")) {
+                JsonElement soundElement = json.get("open_sound");
+                if (soundElement.isJsonPrimitive()) {
+                    // Simple format: "open_sound": "minecraft:block.chest.open"
+                    String sound = soundElement.getAsString();
+                    if (!sound.contains(":")) {
+                        sound = "minecraft:" + sound;
+                    }
+                    builder.openSound(sound);
+                } else if (soundElement.isJsonObject()) {
+                    // Object format with volume/pitch
+                    JsonObject soundObj = soundElement.getAsJsonObject();
+                    String sound = getStringOrDefault(soundObj, "sound", "");
+                    if (!sound.isEmpty()) {
+                        if (!sound.contains(":")) {
+                            sound = "minecraft:" + sound;
+                        }
+                        builder.openSound(sound);
+                        builder.openSoundVolume(getFloatOrDefault(soundObj, "volume", 1.0f));
+                        builder.openSoundPitch(getFloatOrDefault(soundObj, "pitch", 1.0f));
+                    }
+                }
+            }
+            
             // Parse open requirement
             if (json.has("open_requirement") && json.get("open_requirement").isJsonObject()) {
                 builder.openRequirement(parseRequirement(json.getAsJsonObject("open_requirement")));
@@ -184,9 +209,24 @@ public class DeluxeMenuParser {
             builder.skullOwner(json.get("skull_owner").getAsString());
         }
         
+        // Skull texture (base64)
+        if (json.has("skull_texture")) {
+            builder.skullTexture(json.get("skull_texture").getAsString());
+        }
+        
         // Dynamic (for placeholders)
         if (json.has("update")) {
             builder.dynamic(json.get("update").getAsBoolean());
+        }
+        
+        // Permission to click this item
+        if (json.has("permission")) {
+            builder.permission(json.get("permission").getAsString());
+        }
+        
+        // Custom permission denied message
+        if (json.has("permission_message")) {
+            builder.permissionMessage(json.get("permission_message").getAsString());
         }
         
         // View requirement
@@ -252,6 +292,20 @@ public class DeluxeMenuParser {
         if (json.has("expression")) {
             String expr = json.get("expression").getAsString();
             return Condition.expression(expr);
+        }
+        
+        // Type-based requirements
+        if (json.has("type")) {
+            String type = json.get("type").getAsString().toLowerCase();
+            
+            switch (type) {
+                case "always", "true" -> {
+                    return Condition.ALWAYS_TRUE;
+                }
+                case "never", "false" -> {
+                    return Condition.ALWAYS_FALSE;
+                }
+            }
         }
         
         // Requirements list (AND logic)
@@ -401,6 +455,16 @@ public class DeluxeMenuParser {
     private int getIntOrDefault(JsonObject json, String key, int defaultValue) {
         if (json.has(key) && json.get(key).isJsonPrimitive()) {
             return json.get(key).getAsInt();
+        }
+        return defaultValue;
+    }
+    
+    /**
+     * Get a float value or default.
+     */
+    private float getFloatOrDefault(JsonObject json, String key, float defaultValue) {
+        if (json.has(key) && json.get(key).isJsonPrimitive()) {
+            return json.get(key).getAsFloat();
         }
         return defaultValue;
     }

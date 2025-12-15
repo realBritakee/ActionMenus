@@ -84,6 +84,12 @@ public class ActionExecutor {
         for (Action action : actions) {
             if (action == null) continue;
             
+            // Check if action chain was cancelled
+            if (context.isCancelled()) {
+                ActionMenus.LOGGER.debug("Action chain cancelled, skipping remaining actions");
+                break;
+            }
+            
             // Delay actions affect subsequent actions
             if (action instanceof DelayAction delayAction) {
                 cumulativeDelay += delayAction.getTicks();

@@ -24,6 +24,11 @@ public class MenuDefinition {
     private final boolean preventClose;
     private final boolean updateOnClick;
     
+    // Sound settings
+    private final String openSound;
+    private final float openSoundVolume;
+    private final float openSoundPitch;
+    
     private final Condition openRequirement;
     private final List<Action> openActions;
     private final List<Action> closeActions;
@@ -41,6 +46,9 @@ public class MenuDefinition {
         this.updateInterval = builder.updateInterval;
         this.preventClose = builder.preventClose;
         this.updateOnClick = builder.updateOnClick;
+        this.openSound = builder.openSound;
+        this.openSoundVolume = builder.openSoundVolume;
+        this.openSoundPitch = builder.openSoundPitch;
         this.openRequirement = builder.openRequirement;
         this.openActions = Collections.unmodifiableList(new ArrayList<>(builder.openActions));
         this.closeActions = Collections.unmodifiableList(new ArrayList<>(builder.closeActions));
@@ -98,6 +106,22 @@ public class MenuDefinition {
     
     public boolean isUpdateOnClick() {
         return updateOnClick;
+    }
+    
+    public String getOpenSound() {
+        return openSound;
+    }
+    
+    public boolean hasOpenSound() {
+        return openSound != null && !openSound.isEmpty();
+    }
+    
+    public float getOpenSoundVolume() {
+        return openSoundVolume;
+    }
+    
+    public float getOpenSoundPitch() {
+        return openSoundPitch;
     }
     
     public Condition getOpenRequirement() {
@@ -177,6 +201,9 @@ public class MenuDefinition {
         private int updateInterval = 20;
         private boolean preventClose = false;
         private boolean updateOnClick = true;
+        private String openSound;
+        private float openSoundVolume = 1.0f;
+        private float openSoundPitch = 1.0f;
         private Condition openRequirement = Condition.ALWAYS_TRUE;
         private List<Action> openActions = new ArrayList<>();
         private List<Action> closeActions = new ArrayList<>();
@@ -229,6 +256,21 @@ public class MenuDefinition {
         
         public Builder updateOnClick(boolean updateOnClick) {
             this.updateOnClick = updateOnClick;
+            return this;
+        }
+        
+        public Builder openSound(String openSound) {
+            this.openSound = openSound;
+            return this;
+        }
+        
+        public Builder openSoundVolume(float volume) {
+            this.openSoundVolume = Math.max(0.0f, Math.min(2.0f, volume));
+            return this;
+        }
+        
+        public Builder openSoundPitch(float pitch) {
+            this.openSoundPitch = Math.max(0.5f, Math.min(2.0f, pitch));
             return this;
         }
         

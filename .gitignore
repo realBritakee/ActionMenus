@@ -1,0 +1,18 @@
+# Gradle & build output
+.gradle/
+build/
+runs/
+
+# IDE project files (IntelliJ IDEA)
+.idea/
+
+# Gradle wrapper directory (optional)
+gradle/
+
+# Ignore these Markdown/docs (except CHANGELOG.md)
+CHANGELOG_SESSION.md
+PROJECT_SUMMARY.md
+
+# Keep:
+# gradle.properties
+# CHANGELOG.md

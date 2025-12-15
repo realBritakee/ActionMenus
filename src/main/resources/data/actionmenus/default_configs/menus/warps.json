@@ -3,6 +3,7 @@
   "open_command": ["warps", "warp"],
   "size": 36,
   "update_interval": 1,
+  "open_sound": "minecraft:block.chest.open",
   
   "items": {
     "glass1": {

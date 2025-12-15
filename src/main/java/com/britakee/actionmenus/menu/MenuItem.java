@@ -28,6 +28,10 @@ public class MenuItem {
     private final String skullTexture;
     private final List<String> itemFlags;
     
+    // Permission for clicking this item
+    private final String permission;
+    private final String permissionMessage;
+    
     // Conditions
     private final Condition viewRequirement;
     private final Condition clickRequirement;
@@ -51,6 +55,8 @@ public class MenuItem {
         this.skullTexture = builder.skullTexture;
         this.itemFlags = builder.itemFlags != null ?
                 Collections.unmodifiableList(new ArrayList<>(builder.itemFlags)) : null;
+        this.permission = builder.permission;
+        this.permissionMessage = builder.permissionMessage;
         this.viewRequirement = builder.viewRequirement;
         this.clickRequirement = builder.clickRequirement;
         this.clickActions = Collections.unmodifiableMap(new EnumMap<>(builder.clickActions));
@@ -78,6 +84,8 @@ public class MenuItem {
                 .skullOwner(this.skullOwner)
                 .skullTexture(this.skullTexture)
                 .itemFlags(this.itemFlags)
+                .permission(this.permission)
+                .permissionMessage(this.permissionMessage)
                 .viewRequirement(this.viewRequirement)
                 .clickRequirement(this.clickRequirement)
                 .clickActions(this.clickActions)
@@ -139,6 +147,18 @@ public class MenuItem {
     
     public List<String> getItemFlags() {
         return itemFlags;
+    }
+    
+    public String getPermission() {
+        return permission;
+    }
+    
+    public boolean hasPermission() {
+        return permission != null && !permission.isEmpty();
+    }
+    
+    public String getPermissionMessage() {
+        return permissionMessage;
     }
     
     public Condition getViewRequirement() {
@@ -204,6 +224,8 @@ public class MenuItem {
         private String skullOwner;
         private String skullTexture;
         private List<String> itemFlags;
+        private String permission;
+        private String permissionMessage;
         private Condition viewRequirement = Condition.ALWAYS_TRUE;
         private Condition clickRequirement = Condition.ALWAYS_TRUE;
         private Map<ClickType, List<Action>> clickActions = new EnumMap<>(ClickType.class);
@@ -275,6 +297,16 @@ public class MenuItem {
         
         public Builder itemFlags(List<String> itemFlags) {
             this.itemFlags = itemFlags;
+            return this;
+        }
+        
+        public Builder permission(String permission) {
+            this.permission = permission;
+            return this;
+        }
+        
+        public Builder permissionMessage(String permissionMessage) {
+            this.permissionMessage = permissionMessage;
             return this;
         }
         

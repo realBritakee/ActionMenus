@@ -2,6 +2,7 @@ package com.britakee.actionmenus.util;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,8 @@ public class ItemBuilder {
     private int customModelData = 0;
     private boolean enchantGlint = false;
     private String skullOwner;
+    private UUID skullOwnerUUID;
+    private GameProfile skullProfile; // Full profile with skin data
     private String skullTexture;
     private Set<String> hideFlags = new HashSet<>();
     
@@ -114,6 +117,17 @@ public class ItemBuilder {
         return this;
     }
     
+    public ItemBuilder skullOwner(String owner, UUID uuid) {
+        this.skullOwner = owner;
+        this.skullOwnerUUID = uuid;
+        return this;
+    }
+    
+    public ItemBuilder skullProfile(GameProfile profile) {
+        this.skullProfile = profile;
+        return this;
+    }
+    
     public ItemBuilder skullTexture(String texture) {
         this.skullTexture = texture;
         return this;
@@ -166,21 +180,51 @@ public class ItemBuilder {
     }
     
     private void applySkullData(ItemStack stack) {
-        if (skullTexture != null && !skullTexture.isEmpty()) {
-            // Create profile with texture
-            GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+        if (skullProfile != null && !skullProfile.getProperties().get("textures").isEmpty()) {
+            // Use the provided GameProfile directly if it has textures
+            stack.set(DataComponents.PROFILE, new ResolvableProfile(skullProfile));
+        } else if (skullTexture != null && !skullTexture.isEmpty()) {
+            // Create profile with base64 texture
+            UUID textureUUID = UUID.nameUUIDFromBytes(skullTexture.getBytes());
+            GameProfile profile = new GameProfile(textureUUID, "CustomHead");
             profile.getProperties().put("textures", new Property("textures", skullTexture));
             stack.set(DataComponents.PROFILE, new ResolvableProfile(profile));
+        } else if (skullProfile != null) {
+            // Profile without textures - create ResolvableProfile that will fetch textures
+            // Use name and UUID to trigger resolution
+            stack.set(DataComponents.PROFILE, new ResolvableProfile(
+                Optional.of(skullProfile.getName()),
+                Optional.of(skullProfile.getId()),
+                skullProfile.getProperties()
+            ));
         } else if (skullOwner != null && !skullOwner.isEmpty()) {
-            // Create profile with just name (will be resolved by client)
+            // Create profile with name and UUID
             try {
+                // First check if skullOwner itself is a UUID
                 UUID uuid = UUID.fromString(skullOwner);
-                GameProfile profile = new GameProfile(uuid, "");
-                stack.set(DataComponents.PROFILE, new ResolvableProfile(profile));
+                // Create ResolvableProfile with just UUID - will resolve name and textures
+                stack.set(DataComponents.PROFILE, new ResolvableProfile(
+                    Optional.empty(),
+                    Optional.of(uuid),
+                    new PropertyMap()
+                ));
             } catch (IllegalArgumentException e) {
-                // Not a UUID, treat as name
-                GameProfile profile = new GameProfile(null, skullOwner);
-                stack.set(DataComponents.PROFILE, new ResolvableProfile(profile));
+                // Not a UUID, treat as player name
+                if (skullOwnerUUID != null) {
+                    // Have name and UUID - create ResolvableProfile
+                    stack.set(DataComponents.PROFILE, new ResolvableProfile(
+                        Optional.of(skullOwner),
+                        Optional.of(skullOwnerUUID),
+                        new PropertyMap()
+                    ));
+                } else {
+                    // Just name - create ResolvableProfile that will look up UUID and textures
+                    stack.set(DataComponents.PROFILE, new ResolvableProfile(
+                        Optional.of(skullOwner),
+                        Optional.empty(),
+                        new PropertyMap()
+                    ));
+                }
             }
         }
     }

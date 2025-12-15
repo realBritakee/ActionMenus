@@ -88,18 +88,31 @@ public class ActionMenusCommand {
                 try {
                     dispatcher.register(Commands.literal(cmd)
                             .executes(ctx -> {
-                                if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
-                                    return mod.getMenuManager().openMenu(player, menu, null) ? 1 : 0;
+                                try {
+                                    if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
+                                        return mod.getMenuManager().openMenu(player, menu, null) ? 1 : 0;
+                                    }
+                                    ctx.getSource().sendFailure(Component.literal("This command can only be run by a player."));
+                                    return 0;
+                                } catch (Exception e) {
+                                    ActionMenus.LOGGER.error("Error opening menu '{}': ", menu.getId(), e);
+                                    ctx.getSource().sendFailure(Component.literal("Error opening menu: " + e.getMessage()));
+                                    return 0;
                                 }
-                                return 0;
                             })
                             .then(Commands.argument("args", StringArgumentType.greedyString())
                                     .executes(ctx -> {
-                                        if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
-                                            String args = StringArgumentType.getString(ctx, "args");
-                                            return mod.getMenuManager().openMenu(player, menu, args.split("\\s+")) ? 1 : 0;
+                                        try {
+                                            if (ctx.getSource().getEntity() instanceof ServerPlayer player) {
+                                                String args = StringArgumentType.getString(ctx, "args");
+                                                return mod.getMenuManager().openMenu(player, menu, args.split("\\s+")) ? 1 : 0;
+                                            }
+                                            return 0;
+                                        } catch (Exception e) {
+                                            ActionMenus.LOGGER.error("Error opening menu '{}' with args: ", menu.getId(), e);
+                                            ctx.getSource().sendFailure(Component.literal("Error opening menu: " + e.getMessage()));
+                                            return 0;
                                         }
-                                        return 0;
                                     })));
                 } catch (Exception e) {
                     ActionMenus.LOGGER.warn("Failed to register command alias '{}' for menu '{}': {}", 

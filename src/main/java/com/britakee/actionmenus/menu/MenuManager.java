@@ -10,8 +10,12 @@ import com.britakee.actionmenus.placeholder.PlaceholderContext;
 import com.britakee.actionmenus.placeholder.PlaceholderManager;
 import com.britakee.actionmenus.util.ItemBuilder;
 import com.britakee.actionmenus.util.TextUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
@@ -74,26 +78,27 @@ public class MenuManager {
      * Open a menu definition for a player.
      */
     public boolean openMenu(ServerPlayer player, MenuDefinition menu, String[] arguments) {
-        // Check open requirements
-        if (menu.hasOpenRequirement()) {
-            PlaceholderContext placeholderCtx = new PlaceholderContext(player, null, arguments);
-            ConditionContext condCtx = new ConditionContext(player, placeholderCtx, placeholderManager, conditionEvaluator);
+        try {
+            // Check open requirements
+            if (menu.hasOpenRequirement()) {
+                PlaceholderContext placeholderCtx = new PlaceholderContext(player, null, arguments);
+                ConditionContext condCtx = new ConditionContext(player, placeholderCtx, placeholderManager, conditionEvaluator);
+                
+                if (!conditionEvaluator.evaluate(menu.getOpenRequirement(), condCtx)) {
+                    ActionMenus.LOGGER.debug("Player {} failed open requirements for menu {}", 
+                            player.getName().getString(), menu.getId());
+                    // Could send deny message here
+                    return false;
+                }
+            }
             
-            if (!conditionEvaluator.evaluate(menu.getOpenRequirement(), condCtx)) {
-                ActionMenus.LOGGER.debug("Player {} failed open requirements for menu {}", 
-                        player.getName().getString(), menu.getId());
-                // Could send deny message here
-                return false;
+            // Check permission
+            if (menu.hasPermission()) {
+                if (!ActionMenus.getInstance().getPermissionManager().hasPermission(player, menu.getPermission())) {
+                    player.sendSystemMessage(TextUtil.colorize("&cYou don't have permission to open this menu."));
+                    return false;
+                }
             }
-        }
-        
-        // Check permission
-        if (menu.hasPermission()) {
-            if (!ActionMenus.getInstance().getPermissionManager().hasPermission(player, menu.getPermission())) {
-                player.sendSystemMessage(TextUtil.colorize("&cYou don't have permission to open this menu."));
-                return false;
-            }
-        }
         
         // Close any existing menu
         closeMenu(player);
@@ -127,6 +132,11 @@ public class MenuManager {
                 title
         ));
         
+        // Play open sound if configured
+        if (menu.hasOpenSound()) {
+            playSound(player, menu.getOpenSound(), menu.getOpenSoundVolume(), menu.getOpenSoundPitch());
+        }
+        
         // Execute open actions
         if (!menu.getOpenActions().isEmpty()) {
             ActionContext actionCtx = new ActionContext(player, session, menu, -1);
@@ -139,6 +149,38 @@ public class MenuManager {
         
         ActionMenus.LOGGER.debug("Opened menu {} for player {}", menu.getId(), player.getName().getString());
         return true;
+        
+        } catch (Exception e) {
+            ActionMenus.LOGGER.error("Error opening menu '{}' for player '{}': ", 
+                    menu.getId(), player.getName().getString(), e);
+            player.sendSystemMessage(TextUtil.colorize("&cError opening menu. Check server console."));
+            return false;
+        }
+    }
+    
+    /**
+     * Play a sound for a player.
+     * Supports any namespace:sound format (minecraft:, modid:, etc.)
+     */
+    private void playSound(ServerPlayer player, String soundId, float volume, float pitch) {
+        try {
+            ResourceLocation soundLocation = ResourceLocation.tryParse(soundId);
+            if (soundLocation == null) {
+                ActionMenus.LOGGER.warn("Invalid sound ID: {}", soundId);
+                return;
+            }
+            
+            // Get the sound event from registry
+            SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.get(soundLocation);
+            if (soundEvent != null) {
+                player.playNotifySound(soundEvent, SoundSource.MASTER, volume, pitch);
+            } else {
+                // For modded sounds or sounds not in registry, create a direct holder
+                player.playNotifySound(SoundEvent.createVariableRangeEvent(soundLocation), SoundSource.MASTER, volume, pitch);
+            }
+        } catch (Exception e) {
+            ActionMenus.LOGGER.warn("Failed to play sound {}: {}", soundId, e.getMessage());
+        }
     }
     
     /**
@@ -188,11 +230,11 @@ public class MenuManager {
         
         // Lore with placeholders
         if (item.getLore() != null && !item.getLore().isEmpty()) {
-            List<String> lore = new ArrayList<>();
+            List<String> parsedLore = new ArrayList<>();
             for (String line : item.getLore()) {
-                lore.add(placeholderManager.parse(line, ctx));
+                parsedLore.add(placeholderManager.parse(line, ctx));
             }
-            builder.lore(lore);
+            builder.lore(parsedLore);
         }
         
         // Modifiers
@@ -204,7 +246,12 @@ public class MenuManager {
         }
         if (item.getSkullOwner() != null) {
             String owner = placeholderManager.parse(item.getSkullOwner(), ctx);
-            builder.skullOwner(owner);
+            // If the owner name matches the player, use their full GameProfile with skin data
+            if (owner.equalsIgnoreCase(ctx.getPlayer().getName().getString())) {
+                builder.skullProfile(ctx.getPlayer().getGameProfile());
+            } else {
+                builder.skullOwner(owner);
+            }
         }
         if (item.getSkullTexture() != null) {
             builder.skullTexture(item.getSkullTexture());
@@ -244,8 +291,11 @@ public class MenuManager {
                     newStack = buildItem(item, ctx);
                 }
                 
-                // Compare with cached
+                // Compare with cached (handle null cached items)
                 ItemStack cached = session.getCachedItem(slot);
+                if (cached == null) {
+                    cached = ItemStack.EMPTY;
+                }
                 if (!ItemStack.isSameItemSameComponents(newStack, cached)) {
                     chestMenu.getContainer().setItem(slot, newStack);
                     session.setCachedItem(slot, newStack);
@@ -294,6 +344,21 @@ public class MenuManager {
         
         if (item.hasViewRequirement() && !conditionEvaluator.evaluate(item.getViewRequirement(), condCtx)) {
             return;
+        }
+        
+        // Check item permission (works with LuckPerms, FTB Ranks, etc.)
+        if (item.hasPermission()) {
+            if (!ActionMenus.getInstance().getPermissionManager().hasPermission(player, item.getPermission())) {
+                // Send custom permission message or default
+                String message = item.getPermissionMessage();
+                if (message == null || message.isEmpty()) {
+                    message = "&cYou don't have permission to use this!";
+                }
+                player.sendSystemMessage(TextUtil.colorize(message));
+                ActionMenus.LOGGER.debug("Player {} lacks permission {} for slot {} in menu {}",
+                        player.getName().getString(), item.getPermission(), slot, menu.getId());
+                return;
+            }
         }
         
         // Check click requirement

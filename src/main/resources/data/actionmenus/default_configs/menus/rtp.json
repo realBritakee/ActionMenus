@@ -1,0 +1,130 @@
+{
+  "menu_title": "&8Random Teleport",
+  "open_command": ["rtp", "randomtp", "wild"],
+  "size": 27,
+  "open_sound": "minecraft:block.ender_chest.open",
+  
+  "items": {
+    "glass_border": {
+      "material": "gray_stained_glass_pane",
+      "slots": [0, 1, 2, 3, 5, 6, 7, 8, 18, 19, 20, 21, 23, 24, 25, 26],
+      "display_name": " "
+    },
+    
+    "info": {
+      "material": "player_head",
+      "slot": 4,
+      "skull_owner": "%player_name%",
+      "display_name": "&a&lRandom Teleport",
+      "lore": [
+        "",
+        " &7Teleportiere dich an einen",
+        " &7zufälligen Ort in der Welt!",
+        "",
+        " &8▪ &fSpieler: &a%player_name%",
+        ""
+      ]
+    },
+    
+    "rtp_free": {
+      "material": "grass_block",
+      "slot": 10,
+      "display_name": "&a&lOverworld RTP",
+      "lore": [
+        "",
+        " &7Teleportiere dich zufällig",
+        " &7in die Oberwelt.",
+        "",
+        " &8▪ &fKosten: &aKostenlos",
+        "",
+        " &8(&7&oKlicke zum Teleportieren&8)"
+      ],
+      "left_click_commands": [
+        "[message] &aTeleportiere zur Oberwelt...",
+        "[close]",
+        "[sound] minecraft:entity.enderman.teleport"
+      ]
+    },
+    
+    "rtp_nether": {
+      "material": "netherrack",
+      "slot": 12,
+      "display_name": "&c&lNether RTP",
+      "lore": [
+        "",
+        " &7Teleportiere dich zufällig",
+        " &7in den Nether.",
+        "",
+        " &8▪ &fBenötigt: &6VIP Rang",
+        "",
+        " &8(&7&oKlicke zum Teleportieren&8)"
+      ],
+      "permission": "actionmenus.rtp.nether",
+      "permission_message": "&cDu benötigst den &6VIP &cRang für Nether RTP!",
+      "left_click_commands": [
+        "[message] &aTeleportiere zum Nether...",
+        "[close]",
+        "[sound] minecraft:entity.enderman.teleport"
+      ]
+    },
+    
+    "rtp_end": {
+      "material": "end_stone",
+      "slot": 14,
+      "display_name": "&d&lEnd RTP",
+      "lore": [
+        "",
+        " &7Teleportiere dich zufällig",
+        " &7ins End.",
+        "",
+        " &8▪ &fBenötigt: &5MVP Rang",
+        "",
+        " &8(&7&oKlicke zum Teleportieren&8)"
+      ],
+      "permission": "actionmenus.rtp.end",
+      "permission_message": "&cDu benötigst den &5MVP &cRang für End RTP!",
+      "left_click_commands": [
+        "[message] &aTeleportiere zum End...",
+        "[close]",
+        "[sound] minecraft:entity.enderman.teleport"
+      ]
+    },
+    
+    "rtp_instant": {
+      "material": "ender_pearl",
+      "slot": 16,
+      "display_name": "&b&lInstant RTP",
+      "enchanted": true,
+      "lore": [
+        "",
+        " &7Sofortige Teleportation",
+        " &7ohne Cooldown!",
+        "",
+        " &8▪ &fBenötigt: &cAdmin Rang",
+        "",
+        " &8(&7&oKlicke zum Teleportieren&8)"
+      ],
+      "permission": "actionmenus.rtp.instant",
+      "permission_message": "&cDu benötigst den &cAdmin &cRang für Instant RTP!",
+      "left_click_commands": [
+        "[message] &aInstant Teleport...",
+        "[close]",
+        "[sound] minecraft:entity.enderman.teleport"
+      ]
+    },
+    
+    "close": {
+      "material": "barrier",
+      "slot": 22,
+      "display_name": "&c&lSchließen",
+      "lore": [
+        "",
+        " &8(&7&oKlicke zum Schließen&8)"
+      ],
+      "left_click_commands": [
+        "[close]",
+        "[sound] minecraft:ui.button.click"
+      ]
+    }
+  }
+}

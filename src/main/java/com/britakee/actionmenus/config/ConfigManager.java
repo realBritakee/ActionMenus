@@ -97,13 +97,62 @@ public class ConfigManager {
     
     /**
      * Copy default configuration files if they don't exist.
+     * Only copies example menus that are listed in the config.
      */
     private void copyDefaultConfigs() {
-        // Copy main config
+        // Always copy main config first
         copyDefaultResource("config.json", configFile);
         
-        // Copy example menus
-        copyDefaultResource("menus/warps.json", menusDir.resolve("warps.json"));
+        // Load the config to see which menus are listed
+        Set<String> configuredMenuFiles = getConfiguredMenuFiles();
+        
+        // Only copy example menus if they're listed in the config
+        if (configuredMenuFiles.contains("warps.json")) {
+            copyDefaultResource("menus/warps.json", menusDir.resolve("warps.json"));
+        }
+        if (configuredMenuFiles.contains("rtp.json")) {
+            copyDefaultResource("menus/rtp.json", menusDir.resolve("rtp.json"));
+        }
+    }
+    
+    /**
+     * Read the config file to get which menu files are configured.
+     * This is called before the full config load to determine which defaults to copy.
+     */
+    private Set<String> getConfiguredMenuFiles() {
+        Set<String> files = new HashSet<>();
+        
+        if (!Files.exists(configFile)) {
+            // Config doesn't exist yet, return default example menus
+            files.add("warps.json");
+            files.add("rtp.json");
+            return files;
+        }
+        
+        try (Reader reader = Files.newBufferedReader(configFile)) {
+            JsonObject config = JsonParser.parseReader(reader).getAsJsonObject();
+            
+            if (config.has("gui_menus") && config.get("gui_menus").isJsonObject()) {
+                JsonObject menus = config.getAsJsonObject("gui_menus");
+                for (Map.Entry<String, JsonElement> entry : menus.entrySet()) {
+                    if (entry.getValue().isJsonObject()) {
+                        JsonObject menuEntry = entry.getValue().getAsJsonObject();
+                        if (menuEntry.has("file")) {
+                            files.add(menuEntry.get("file").getAsString());
+                        }
+                    } else if (entry.getValue().isJsonPrimitive()) {
+                        files.add(entry.getValue().getAsString());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            ActionMenus.LOGGER.warn("Failed to pre-read config for menu files", e);
+            // Return defaults on error
+            files.add("warps.json");
+            files.add("rtp.json");
+        }
+        
+        return files;
     }
     
     /**

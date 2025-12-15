@@ -19,8 +19,11 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.minecraft.commands.CommandSourceStack;
+import com.mojang.brigadier.CommandDispatcher;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
@@ -62,6 +65,9 @@ public class ActionMenus {
     
     // Config directory
     private final Path configDir;
+    
+    // Command dispatcher reference for registering menu commands
+    private CommandDispatcher<CommandSourceStack> commandDispatcher;
     
     public ActionMenus(IEventBus modEventBus, ModContainer modContainer) {
         instance = this;
@@ -117,6 +123,15 @@ public class ActionMenus {
     }
     
     @SubscribeEvent
+    public void onServerStarted(ServerStartedEvent event) {
+        // Register menu command aliases after configs are loaded
+        if (commandDispatcher != null) {
+            ActionMenusCommand.registerMenuAliases(commandDispatcher, this);
+            LOGGER.info("Registered menu command aliases");
+        }
+    }
+    
+    @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         LOGGER.info("ActionMenus shutting down...");
         
@@ -129,6 +144,7 @@ public class ActionMenus {
     
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
+        this.commandDispatcher = event.getDispatcher();
         ActionMenusCommand.register(event.getDispatcher(), this);
     }
     
@@ -171,5 +187,9 @@ public class ActionMenus {
     
     public Path getConfigDir() {
         return configDir;
+    }
+    
+    public CommandDispatcher<CommandSourceStack> getCommandDispatcher() {
+        return commandDispatcher;
     }
 }
